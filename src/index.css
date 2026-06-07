@@ -1,0 +1,38 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-bento-bg: #121214;
+  --color-bento-surface: #202024;
+  --color-bento-border: #2d2d34;
+  --color-text-secondary: #8e9299;
+
+  --color-netflix: #E50914;
+  --color-youtube: #FF0000;
+  --color-prime: #00A8E1;
+  --color-max: #fff;
+  --color-disney: #0063E5;
+
+  --color-hit: #22c55e;
+  --color-miss: #ef4444;
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #121214;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #2d2d34;
+    border-radius: 2px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #4a4a54;
+  }
+}
+

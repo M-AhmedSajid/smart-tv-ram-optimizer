@@ -1,0 +1,6 @@
+{
+  "name": "Memory Optimizer Simulator",
+  "description": "A real-time side-by-side memory optimization simulator comparing FIFO, LRU, and Optimal page replacement algorithms for a Smart TV application streaming environment.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
