@@ -1,27 +1,17 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
+function normalizeRam(ram, capacity) {
+  const copy = [...ram];
+  if (copy.length > capacity) copy.length = capacity;
+  while (copy.length < capacity) copy.push(null);
+  return copy;
+}
 
-import { AppName, RAMSlot, AlgorithmState } from "../types";
-
-/**
- * Executes a step of the FIFO Algorithm
- */
-export function runFIFO(
-  currState: AlgorithmState,
-  capacity: number,
-  request: AppName,
-  stepIndex: number
-): AlgorithmState {
-  const ram = [...currState.ram];
-  // Pads/truncates ram array to match capacity
-  while (ram.length < capacity) ram.push(null);
-  if (ram.length > capacity) ram.length = capacity;
+export function runFIFO(currState, capacity, request, stepIndex) {
+  const ram = normalizeRam(currState.ram, capacity);
 
   let totalHits = currState.totalHits;
   let totalMisses = currState.totalMisses;
-  let lastResult: "Hit" | "Miss" = "Hit";
+  let lastResult = "Hit";
+  let flashIndex = null;
   const newLogs = [...currState.logs];
 
   // Check for hit
@@ -69,6 +59,7 @@ export function runFIFO(
       };
 
       const evictedName = evicted ? evicted.appName : "Unknown";
+      flashIndex = oldestIdx;
       newLogs.unshift(
         `[Step #${stepIndex}] [MISS] RAM full. Evicted ${evictedName} (loaded oldest at step #${oldestStep}) from Slot ${oldestIdx + 1} to load ${request}.`
       );
@@ -80,7 +71,7 @@ export function runFIFO(
     if (slot === null) return null;
     return {
       ...slot,
-      counterLabel: `Loaded at step #${slot.metadata}`,
+      counterLabel: `Loaded: #${slot.metadata}`,
     };
   });
 
@@ -90,25 +81,20 @@ export function runFIFO(
     totalMisses,
     lastResult,
     logs: newLogs,
+    flashIndex,
   };
 }
 
 /**
  * Executes a step of the LRU Algorithm
  */
-export function runLRU(
-  currState: AlgorithmState,
-  capacity: number,
-  request: AppName,
-  stepIndex: number
-): AlgorithmState {
-  const ram = [...currState.ram];
-  while (ram.length < capacity) ram.push(null);
-  if (ram.length > capacity) ram.length = capacity;
+export function runLRU(currState, capacity, request, stepIndex) {
+  const ram = normalizeRam(currState.ram, capacity);
 
   let totalHits = currState.totalHits;
   let totalMisses = currState.totalMisses;
-  let lastResult: "Hit" | "Miss" = "Hit";
+  let lastResult = "Hit";
+  let flashIndex = null;
   const newLogs = [...currState.logs];
 
   const hitIndex = ram.findIndex((slot) => slot !== null && slot.appName === request);
@@ -118,7 +104,7 @@ export function runLRU(
     totalHits += 1;
     lastResult = "Hit";
     ram[hitIndex] = {
-      ...ram[hitIndex]!,
+      ...ram[hitIndex],
       metadata: stepIndex, // Update lastUsed time to current step
     };
     newLogs.unshift(
@@ -160,6 +146,7 @@ export function runLRU(
       };
 
       const evictedName = evicted ? evicted.appName : "Unknown";
+      flashIndex = lruIdx;
       newLogs.unshift(
         `[Step #${stepIndex}] [MISS] RAM full. Evicted ${evictedName} (idle since step #${lruStep}) from Slot ${lruIdx + 1} to load ${request}.`
       );
@@ -182,6 +169,7 @@ export function runLRU(
     totalMisses,
     lastResult,
     logs: newLogs,
+    flashIndex,
   };
 }
 
@@ -189,20 +177,13 @@ export function runLRU(
  * Executes a step of the Optimal Algorithm
  * @param futureLookahead List of upcoming requests including or after this current step index
  */
-export function runOptimal(
-  currState: AlgorithmState,
-  capacity: number,
-  request: AppName,
-  stepIndex: number,
-  futureLookahead: AppName[]
-): AlgorithmState {
-  const ram = [...currState.ram];
-  while (ram.length < capacity) ram.push(null);
-  if (ram.length > capacity) ram.length = capacity;
+export function runOptimal(currState, capacity, request, stepIndex, futureLookahead) {
+  const ram = normalizeRam(currState.ram, capacity);
 
   let totalHits = currState.totalHits;
   let totalMisses = currState.totalMisses;
-  let lastResult: "Hit" | "Miss" = "Hit";
+  let lastResult = "Hit";
+  let flashIndex = null;
   const newLogs = [...currState.logs];
 
   const hitIndex = ram.findIndex((slot) => slot !== null && slot.appName === request);
@@ -241,7 +222,7 @@ export function runOptimal(
 
         // Find next request index in futureLookahead (future queue contains remaining items)
         const nextOccurrence = futureLookahead.indexOf(slot.appName);
-        
+
         let distance = 0;
         if (nextOccurrence === -1) {
           // If it is never used again, distance is infinite (we set extreme priority with FIFO order retention)
@@ -260,6 +241,7 @@ export function runOptimal(
       const evictedName = evicted ? evicted.appName : "Unknown";
 
       // Swap in new app
+      flashIndex = evictIdx;
       ram[evictIdx] = {
         appName: request,
         metadata: 0, // will be computed below
@@ -300,5 +282,6 @@ export function runOptimal(
     totalMisses,
     lastResult,
     logs: newLogs,
+    flashIndex,
   };
 }

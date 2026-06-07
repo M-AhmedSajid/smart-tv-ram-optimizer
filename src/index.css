@@ -9,11 +9,11 @@
   --color-bento-border: #2d2d34;
   --color-text-secondary: #8e9299;
 
-  --color-netflix: #E50914;
-  --color-youtube: #FF0000;
-  --color-prime: #00A8E1;
+  --color-netflix: #e50914;
+  --color-youtube: #ff0000;
+  --color-prime: #00a8e1;
   --color-max: #fff;
-  --color-disney: #0063E5;
+  --color-disney: #0063e5;
 
   --color-hit: #22c55e;
   --color-miss: #ef4444;
@@ -35,4 +35,3 @@
     background: #4a4a54;
   }
 }
-

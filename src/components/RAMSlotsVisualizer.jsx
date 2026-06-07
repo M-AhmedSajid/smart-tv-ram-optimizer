@@ -1,24 +1,11 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
-import React from "react";
-import { RAMSlot, APPS } from "../types";
+import { APPS } from "../types";
 import { Layers } from "lucide-react";
 
-interface RAMSlotsVisualizerProps {
-  ram: (RAMSlot | null)[];
-  capacity: number;
-}
-
-export const RAMSlotsVisualizer: React.FC<RAMSlotsVisualizerProps> = ({ ram, capacity }) => {
-  // Pad local RAM list to match the dynamic capacity exactly
-  const filledRam = [...ram];
-  while (filledRam.length < capacity) {
-    filledRam.push(null);
-  }
-  const slotsToShow = filledRam.slice(0, capacity);
+export const RAMSlotsVisualizer = ({ ram, capacity, slotFlash }) => {
+  const slotsToShow = Array.from(
+    { length: capacity },
+    (_, i) => ram[i] ?? null,
+  );
 
   return (
     <div className="bg-bento-surface border border-bento-border rounded-xl p-4 shadow-sm flex-1 flex flex-col justify-between">
@@ -36,7 +23,7 @@ export const RAMSlotsVisualizer: React.FC<RAMSlotsVisualizerProps> = ({ ram, cap
               <div
                 key={`empty-slot-${index}`}
                 id={`ram-slot-empty-${index}`}
-                className="flex items-center justify-between h-[52px] border border-dashed border-bento-border bg-bento-bg/30 rounded-lg px-3.5 select-none"
+                className="flex items-center justify-between h-13 border border-dashed border-bento-border bg-bento-bg/30 rounded-lg px-3.5 select-none"
               >
                 <div className="flex items-center gap-2">
                   <div className="font-mono text-[9px] font-semibold text-gray-650 bg-bento-bg border border-bento-border px-1 rounded uppercase">
@@ -51,18 +38,22 @@ export const RAMSlotsVisualizer: React.FC<RAMSlotsVisualizerProps> = ({ ram, cap
           }
 
           const appConfig = APPS[slot.appName];
-          let textColorClass = "text-white";
-          if (slot.appName === "Netflix") textColorClass = "text-netflix";
-          else if (slot.appName === "YouTube") textColorClass = "text-youtube";
-          else if (slot.appName === "Amazon Prime") textColorClass = "text-prime";
-          else if (slot.appName === "Disney+") textColorClass = "text-disney";
-          else if (slot.appName === "Max") textColorClass = "text-max";
+          const textColorClass = appConfig?.textAccent ?? "text-white";
+
+          const flashPhase =
+            slotFlash?.index === index ? slotFlash.phase : null;
+          const flashBorder =
+            flashPhase === "loaded"
+              ? "border-emerald-400 bg-emerald-950/20"
+              : flashPhase === "evicted"
+                ? "border-rose-400 bg-rose-950/20"
+                : "border-bento-border bg-bento-bg";
 
           return (
             <div
               key={`occupied-slot-${index}-${slot.appName}`}
               id={`ram-slot-occupied-${index}-${slot.appName}`}
-              className="flex items-center justify-between h-[52px] border border-bento-border bg-bento-bg rounded-lg px-3.5"
+              className={`relative flex items-center justify-between h-13 border rounded-lg px-3.5 transition-all duration-500 ${flashBorder}`}
             >
               <div className="flex items-center gap-2">
                 {/* Slot index indicator */}
@@ -76,7 +67,9 @@ export const RAMSlotsVisualizer: React.FC<RAMSlotsVisualizerProps> = ({ ram, cap
                     className="w-1.5 h-1.5 rounded-full"
                     style={{ backgroundColor: appConfig?.color }}
                   />
-                  <div className={`text-xs font-black tracking-wider uppercase ${textColorClass}`}>
+                  <div
+                    className={`text-xs font-black tracking-wider uppercase ${textColorClass}`}
+                  >
                     {slot.appName}
                   </div>
                 </div>
@@ -87,10 +80,19 @@ export const RAMSlotsVisualizer: React.FC<RAMSlotsVisualizerProps> = ({ ram, cap
                 <span className="inline-block text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-bento-surface text-gray-300 border border-bento-border">
                   {slot.counterLabel || "Active"}
                 </span>
-                <p className="text-[8px] text-gray-500 font-mono mt-0.5 uppercase">
-                  Prio: {slot.metadata}
-                </p>
               </div>
+
+              {flashPhase && (
+                <div
+                  className={`absolute inset-0 flex items-center justify-center rounded-lg text-[10px] font-bold uppercase tracking-widest ${
+                    flashPhase === "loaded"
+                      ? "bg-emerald-500/15 text-emerald-200"
+                      : "bg-rose-500/15 text-rose-200"
+                  }`}
+                >
+                  {flashPhase === "loaded" ? "LOADED" : "EVICTED"}
+                </div>
+              )}
             </div>
           );
         })}
