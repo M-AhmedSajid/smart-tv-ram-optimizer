@@ -8,6 +8,18 @@ import { MetricsPanel } from "./components/MetricsPanel";
 import { LiveConsole } from "./components/LiveConsole";
 import { Tv, CheckCircle2, XCircle } from "lucide-react";
 
+function useFlash(flash, setFlash) {
+  useEffect(() => {
+    if (!flash) return;
+
+    const timer = setTimeout(() => {
+      setFlash(null);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [flash, setFlash]);
+}
+
 // Helper to generate a random app
 const getRandomApp = () => {
   return APP_LIST[Math.floor(Math.random() * APP_LIST.length)];
@@ -48,6 +60,10 @@ export default function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
 
+  useFlash(fifoFlash, setFifoFlash);
+  useFlash(lruFlash, setLruFlash);
+  useFlash(optimalFlash, setOptimalFlash);
+
   // Initialize prediction lookahead on mount
   useEffect(() => {
     setFutureQueue(generateInitialQueue());
@@ -61,25 +77,6 @@ export default function App() {
       setOptimalState(initialAlgorithmState(capacity));
     }
   }, [capacity, isStarted]);
-
-  function useFlash(setFlash) {
-    useEffect(() => {
-      if (!setFlash) return;
-
-      const timer = setTimeout(() => {
-        setFlash((prev) => {
-          if (!prev) return null;
-          if (prev.phase === "evicted") return { ...prev, phase: "loaded" };
-          return null;
-        });
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }, [setFlash]);
-  }
-  useFlash(fifoFlash, setFifoFlash);
-  useFlash(lruFlash, setLruFlash);
-  useFlash(optimalFlash, setOptimalFlash);
 
   // Handle a single application stream request event
   const handleTriggerApp = (appName) => {
@@ -108,19 +105,19 @@ export default function App() {
       nextFifoState.flashIndex !== null &&
       nextFifoState.flashIndex !== undefined
     ) {
-      setFifoFlash({ index: nextFifoState.flashIndex, phase: "evicted" });
+      setFifoFlash({ index: nextFifoState.flashIndex, phase: "loaded" });
     }
     if (
       nextLruState.flashIndex !== null &&
       nextLruState.flashIndex !== undefined
     ) {
-      setLruFlash({ index: nextLruState.flashIndex, phase: "evicted" });
+      setLruFlash({ index: nextLruState.flashIndex, phase: "loaded" });
     }
     if (
       nextOptimalState.flashIndex !== null &&
       nextOptimalState.flashIndex !== undefined
     ) {
-      setOptimalFlash({ index: nextOptimalState.flashIndex, phase: "evicted" });
+      setOptimalFlash({ index: nextOptimalState.flashIndex, phase: "loaded" });
     }
 
     // 4. Record history and advance predictions queue (shift & append new forecast)

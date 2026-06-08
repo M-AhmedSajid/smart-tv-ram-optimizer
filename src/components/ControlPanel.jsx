@@ -13,9 +13,9 @@ export const ControlPanel = ({
     <div className="sticky top-0 z-40 py-3 bg-bento-bg shadow-md border-b border-bento-border">
       <div className="bg-bento-surface border border-bento-border rounded-xl py-2.5 px-5 space-y-2.5">
         {/* Command Buttons Area */}
-        <div className="flex items-center justify-between border-b border-bento-border pb-2 gap-5">
+        <div className="flex flex-col sm:flex-row items-center justify-between border-b border-bento-border pb-2 gap-3 sm:gap-5">
           {/* TV RAM Capacity Optimizer Configuration */}
-          <div className="flex flex-1 items-center gap-4">
+          <div className="w-full sm:w-auto flex flex-1 items-center gap-4">
             <input
               type="range"
               min="2"
@@ -34,7 +34,7 @@ export const ControlPanel = ({
               </span>
             </div>
           </div>
-          <div className="flex-1">
+          <div className="w-full sm:w-auto flex-1">
             {/* Quick Step - Forecast Engine Trigger */}
             {nextPredictedApp && (
               <button
@@ -54,7 +54,7 @@ export const ControlPanel = ({
           </div>
           <button
             onClick={onReset}
-            className="flex items-center gap-1.5 px-3 py-2.5 bg-neutral-800 hover:bg-neutral-700 active:bg-neutral-850 text-xs font-mono font-bold text-gray-300 rounded-md transition-all border border-bento-border"
+            className="w-full sm:w-auto flex items-center gap-1.5 px-3 py-2.5 bg-neutral-800 hover:bg-neutral-700 active:bg-neutral-850 text-xs font-mono font-bold text-gray-300 rounded-md transition-all border border-bento-border mb-2 sm:mb-0"
           >
             <RotateCcw className="w-3.5 h-3.5 text-rose-400" />
             Reset All
@@ -67,7 +67,7 @@ export const ControlPanel = ({
               <span className="w-1.5 h-1.5 rounded-full bg-sky-450 animate-pulse" />
               Or manually launch any device app:
             </p>
-            <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-5 gap-2">
+            <div className="grid grid-cols-5 gap-2">
               {APP_LIST.map((appName) => {
                 const config = APPS[appName];
                 let btnThemeClass =

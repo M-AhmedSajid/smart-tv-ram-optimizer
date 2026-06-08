@@ -45,9 +45,7 @@ export const RAMSlotsVisualizer = ({ ram, capacity, slotFlash }) => {
           const flashBorder =
             flashPhase === "loaded"
               ? "border-emerald-400 bg-emerald-950/20"
-              : flashPhase === "evicted"
-                ? "border-rose-400 bg-rose-950/20"
-                : "border-bento-border bg-bento-bg";
+              : "border-bento-border bg-bento-bg";
 
           return (
             <div
@@ -83,14 +81,8 @@ export const RAMSlotsVisualizer = ({ ram, capacity, slotFlash }) => {
               </div>
 
               {flashPhase && (
-                <div
-                  className={`absolute inset-0 flex items-center justify-center rounded-lg text-[10px] font-bold uppercase tracking-widest ${
-                    flashPhase === "loaded"
-                      ? "bg-emerald-500/15 text-emerald-200"
-                      : "bg-rose-500/15 text-rose-200"
-                  }`}
-                >
-                  {flashPhase === "loaded" ? "LOADED" : "EVICTED"}
+                <div className="absolute inset-0 flex items-center justify-center rounded-lg text-[10px] font-bold uppercase tracking-widest bg-emerald-500/15 text-emerald-200">
+                  LOADED
                 </div>
               )}
             </div>
