@@ -39,7 +39,7 @@ export function runFIFO(currState, capacity, request, stepIndex) {
         `[Step #${stepIndex}] [MISS] ${request} is not in RAM. Allocated to empty Slot ${emptyIndex + 1}.`
       );
     } else {
-      // RAM is full, evict the FIFO (lowest metadata stepIndex)
+      // RAM is full, evict the FIFO
       let oldestIdx = 0;
       let oldestStep = Infinity;
 
@@ -66,7 +66,6 @@ export function runFIFO(currState, capacity, request, stepIndex) {
     }
   }
 
-  // Double check all non-empty labels to verify sequence output
   const updatedRam = ram.map((slot) => {
     if (slot === null) return null;
     return {
@@ -85,9 +84,6 @@ export function runFIFO(currState, capacity, request, stepIndex) {
   };
 }
 
-/**
- * Executes a step of the LRU Algorithm
- */
 export function runLRU(currState, capacity, request, stepIndex) {
   const ram = normalizeRam(currState.ram, capacity);
 
@@ -126,7 +122,7 @@ export function runLRU(currState, capacity, request, stepIndex) {
         `[Step #${stepIndex}] [MISS] allocation for ${request}. Initialized in empty Slot ${emptyIndex + 1}.`
       );
     } else {
-      // Evict Least Recently Used (lowest metadata)
+      // Evict Least Recently Used
       let lruIdx = 0;
       let lruStep = Infinity;
 
@@ -153,7 +149,6 @@ export function runLRU(currState, capacity, request, stepIndex) {
     }
   }
 
-  // Update counterLabels to reflect idle duration or last used step relative to the action
   const updatedRam = ram.map((slot) => {
     if (slot === null) return null;
     const idleDuration = stepIndex - slot.metadata;
@@ -173,10 +168,6 @@ export function runLRU(currState, capacity, request, stepIndex) {
   };
 }
 
-/**
- * Executes a step of the Optimal Algorithm
- * @param futureLookahead List of upcoming requests including or after this current step index
- */
 export function runOptimal(currState, capacity, request, stepIndex, futureLookahead) {
   const ram = normalizeRam(currState.ram, capacity);
 
@@ -204,7 +195,7 @@ export function runOptimal(currState, capacity, request, stepIndex, futureLookah
     if (emptyIndex !== -1) {
       ram[emptyIndex] = {
         appName: request,
-        metadata: 0, // will be computed below
+        metadata: 0,
         counterLabel: "",
       };
       newLogs.unshift(
@@ -212,7 +203,6 @@ export function runOptimal(currState, capacity, request, stepIndex, futureLookah
       );
     } else {
       // RAM is full. Evaluate future lookahead distance for each active slot
-      // Distance is first occurrence index in futureLookahead
       let maxDistance = -1;
       let evictIdx = 0;
 
@@ -220,12 +210,12 @@ export function runOptimal(currState, capacity, request, stepIndex, futureLookah
         const slot = ram[i];
         if (slot === null) continue;
 
-        // Find next request index in futureLookahead (future queue contains remaining items)
+        // Find next request index in futureLookahead
         const nextOccurrence = futureLookahead.indexOf(slot.appName);
 
         let distance = 0;
         if (nextOccurrence === -1) {
-          // If it is never used again, distance is infinite (we set extreme priority with FIFO order retention)
+          // If it is never used again, distance is infinite
           distance = 10000 + i;
         } else {
           distance = nextOccurrence;
@@ -244,7 +234,7 @@ export function runOptimal(currState, capacity, request, stepIndex, futureLookah
       flashIndex = evictIdx;
       ram[evictIdx] = {
         appName: request,
-        metadata: 0, // will be computed below
+        metadata: 0,
         counterLabel: "",
       };
 
@@ -259,7 +249,7 @@ export function runOptimal(currState, capacity, request, stepIndex, futureLookah
     }
   }
 
-  // Compute actual next occurrences in the remaining future lookahead queue (all looking forward)
+  // Compute actual next occurrences in the remaining future lookahead queue
   const updatedRam = ram.map((slot) => {
     if (slot === null) return null;
     const nextOccur = futureLookahead.indexOf(slot.appName);
