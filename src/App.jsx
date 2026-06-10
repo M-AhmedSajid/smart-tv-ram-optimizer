@@ -21,8 +21,17 @@ function useFlash(flash, setFlash) {
 }
 
 // Helper to generate a random app
-const getRandomApp = () => {
-  return APP_LIST[Math.floor(Math.random() * APP_LIST.length)];
+let shuffledApps = [];
+
+const shuffle = (arr) => {
+  return [...arr].sort(() => Math.random() - 0.5);
+};
+
+export const getRandomApp = () => {
+  if (shuffledApps.length === 0) {
+    shuffledApps = shuffle(APP_LIST);
+  }
+  return shuffledApps.pop();
 };
 
 // Helper for initial lookahead list of 10 forecasted items
